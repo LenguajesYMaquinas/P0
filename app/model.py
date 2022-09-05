@@ -1,4 +1,23 @@
+"---------------------Declarations---------------------"
+
+declared_variables = []
+
+instructions = ["walk", "jump", "jumpTo", "veer", "look", "drop", "grab", "get", "free", "pop", "walk", "isfacing", "isValid", "canWalk", "not"]
+
+"---------------------Auxiliar functions---------------------"
+
+def number_of_arguments():
+    return True
+
+"---------------------Main functions---------------------"
+
 def file_reader(route: str)->list:
+
+    """
+    
+        Read the program in the txt file and savit in a list of lists, where each list is a line of the txt file. Also, delete the unnecesary spaces.
+
+    """
 
     file = open(route,'r')
     line = file.readline()
@@ -16,6 +35,12 @@ def file_reader(route: str)->list:
     return file_lines
 
 def verify_opened_closed_program(program:list)->bool:
+
+    """
+
+    Verify the program was closed and opened.
+
+    """
 
     output = False
     states = {
@@ -36,6 +61,12 @@ def verify_opened_closed_program(program:list)->bool:
 
 def verifiy_var_declarations(program:list)->bool:
 
+    """
+    
+    Verify the correct syntax in the variable declarations.
+
+    """
+
     output = False
     var_counter = 1
     states = {}
@@ -52,7 +83,37 @@ def verifiy_var_declarations(program:list)->bool:
 
     return output
 
-            
+def declare_variables(program: list):
+
+    """
+
+        Save the correct declared variables.
+
+    """
+
+    for i in program:
+        if "var" in i and len(i) > 1 and i[len(i)-1][len(i[len(i)-1])-1] == ";":
+            i.remove("var")
+            for name in i:
+                name = name.replace(",", "")
+                name = name.replace(";", "")
+                declared_variables.append(name)
+
+def verify_declared_variables(program:list)->bool:
+
+    """
+    
+        Verify that the variables inserted in the argument of a command were declared
+
+    """
+
+    states = {}
+
+    for line in program:
+        for string in program:
+            if "walk" in string:
+        
+"---------------------Main function---------------------"
 
 def verify_program(program)->bool:
     if verify_opened_closed_program(program) and verifiy_var_declarations(program):
