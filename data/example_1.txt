@@ -6,6 +6,9 @@ PROC putCB(c, b)
 	free(b) ;
 	walk(n)
 }
+
+CORP
+
 PROC goNorth()
 {
 
@@ -21,7 +24,6 @@ PROC goWest()
 
 }
 CORP
-
 
 {
 go(3,3) ;
