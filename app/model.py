@@ -1,6 +1,9 @@
 
 "---------------------Declarations---------------------"
 
+from dis import Instruction
+
+
 declared_variables = []
 
 commands = ["walk", "jump", "jumpTo", "veer", "look", "drop", "grab", "get", "free", "pop"]
@@ -57,11 +60,14 @@ def save_procedures(program:list):
 
     """
 
-    for row in program:
-        if "PROC" in row:
-            row.remove("PROC")
+    program_copy = program.copy()
+
+    for row in program_copy:
+        row_copy = row.copy()
+        if "PROC" in row_copy:
+            row_copy.remove("PROC")
             string = ""
-            string = string.join(row)
+            string = string.join(row_copy)
             first_parenthesis = 0
             position = 0
             for char in string:
@@ -169,8 +175,6 @@ def verify_opened_closed_program(program:list)->bool:
 
     return output
 
-    return output
-
 def verifiy_var_declarations(program:list)->bool:
 
     """
@@ -226,6 +230,60 @@ def verify_arguemts_in_commands(program:list)->bool:
 
     return output
                     
+def verify_instruction_blocks(program:list)->bool:
+
+    instruction_blocks_positions = {}
+    instruction_block_counter = 1
+    position = 0
+
+    for row in program:
+
+        if "{" in row and len(row) == 1:
+            instruction_blocks_positions["block_"+str(instruction_block_counter)] = {"start": position, "end": 0}
+
+        if "}" in row and len(row) == 1:
+            instruction_blocks_positions["block_"+str(instruction_block_counter)]["end"] = position
+            instruction_block_counter += 1
+
+        position += 1
+
+    instruction_blocks_contain = {}
+
+    for block_position in instruction_blocks_positions:
+        instruction_blocks_contain[block_position] = program[instruction_blocks_positions[block_position]["start"]+1:instruction_blocks_positions[block_position]["end"]]
+
+    for key in instruction_blocks_contain:
+        block_contain = instruction_blocks_contain[key]
+        element_position = 0
+        for element in block_contain:
+            if len(element) == 0:
+                del block_contain[element_position]
+
+            element_position += 1
+
+    output = True
+
+    for key in instruction_blocks_contain:
+        element_position = 0
+        if len(instruction_blocks_contain[key]) > 1:
+            items_list = []
+            for element in instruction_blocks_contain[key]:
+                element_string = ""
+                element_string = element_string.join(element)
+                items_list.append(element_string)
+            items_list_copy = []
+            for n in items_list:
+                if n != "":
+                    items_list_copy.append(n)
+            n_position = 0
+            for n in items_list_copy:
+                if n_position < len(items_list_copy)-1:
+                    if n[-1] != ";":
+                        output = False
+                n_position += 1
+    
+    return output
+            
 "---------------------Main function---------------------"
 
 def verify_program(program)->bool:
@@ -233,9 +291,7 @@ def verify_program(program)->bool:
     declare_variables(program)
     save_procedures(program)
 
-    print(procedures)
-
-    if verify_opened_closed_program(program) and verifiy_var_declarations(program) and verify_opened_closed_procedure(program) and verify_arguemts_in_commands(program):
+    if verify_opened_closed_program(program) and verifiy_var_declarations(program) and verify_opened_closed_procedure(program) and verify_arguemts_in_commands(program) and verify_instruction_blocks(program):
         print("\nThe program is correct.\n")
     else:
         print("\nThe program is not correct.\n")
