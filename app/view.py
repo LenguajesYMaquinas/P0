@@ -7,6 +7,6 @@ def execute_appplication():
     file_route = file_route + route
     program = model.file_reader(file_route)
     model.verify_program(program)
-    
+    print(model.verify_arguemts_in_commands(program))
 
 execute_appplication()

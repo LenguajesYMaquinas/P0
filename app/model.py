@@ -1,35 +1,42 @@
 
 "---------------------Declarations---------------------"
 
+from ast import arguments
+from distutils.log import FATAL
+from multiprocessing import parent_process
+from turtle import position
+
+
 declared_variables = []
 
-instructions = ["walk", "jump", "jumpTo", "veer", "look", "drop", "grab", "get", "free", "pop", "walk", "isfacing", "isValid", "canWalk", "not"]
+commands = ["walk", "jump", "jumpTo", "veer", "look", "drop", "grab", "get", "free", "pop"]
+
+directions = ["north", "south", "east", "west", ""]
+
+conditions = ["isfacing", "isValid", "canWalk", "not"]
 
 "---------------------Auxiliar functions---------------------"
 
-def confirmar_PC(parte, pos):
+def clean_arguments(string:str)->list:
 
-    for o in range(pos, len(parte)):
-        Lugar = parte[o] 
-        LugarI = len(Lugar)
-        todoBien= " "
-        if LugarI == 1 or LugarI == 2:
-            comprobar= Lugar[-1]
-        else:
-            todoBien= False
-            break
+    first_parenthesis = 0
+    second_parenthesis = 0
+    position = 0
 
-        if comprobar == "fi" or comprobar == "od" or comprobar == "per" or comprobar == "{":
-            todoBien= True
-        elif comprobar == "}":
-            todoBien= True
-            break
-        else:
-            sig= parte[o+1]
-            if sig == "}":
-                todoBien= True
+    for char in string:
 
-        return todoBien
+        if char == "(":
+            first_parenthesis = position
+        if char == ")":
+            second_parenthesis = position
+
+        position += 1
+
+    string = string[first_parenthesis + 1:second_parenthesis]
+    arguments = string.split(",")
+
+    return arguments
+        
 
 "---------------------File reader function---------------------"
 
@@ -151,7 +158,23 @@ def declare_variables(program: list):
                 name = name.replace(";", "")
                 declared_variables.append(name)
 
-def verify_arguemts(program:list)->bool:
+def declare_parameters(program: list):
+
+    """
+
+        Save as variables the arguments in a procedure
+
+    """
+
+    for i in program:
+        if "PROC" in i and len(i) > 1 and i[len(i)-1][len(i[len(i)-1])-1] == ";":
+            i.remove("var")
+            for name in i:
+                name = name.replace(",", "")
+                name = name.replace(";", "")
+                declared_variables.append(name)
+
+def verify_arguemts_in_commands(program:list)->bool:
 
     """
     
@@ -159,15 +182,33 @@ def verify_arguemts(program:list)->bool:
 
     """
 
-    for line in program:
-        for string in program:
-            if "walk" in string:
-                return True
+    arguments = []
 
+    for line in program:
+        for string in line:
+            for command in commands:
+                if command in string:
+                    arguments += clean_arguments(string)
+
+    arguments_validations = {}
+
+    for argument in arguments:
+        arguments_validations[argument] = False
+        if argument in declared_variables or argument in directions or argument in commands or argument.isdigit():
+            arguments_validations[argument] = True
+
+    output = True
+
+    for i in list(arguments_validations.values()):
+        if i == False:
+            output = False  
+
+    return output
+                    
 "---------------------Main function---------------------"
 
 def verify_program(program)->bool:
-    if verify_opened_closed_program(program) and verifiy_var_declarations(program) and verify_opened_closed_procedure(program):
+    if verify_opened_closed_program(program) and verifiy_var_declarations(program) and verify_opened_closed_procedure(program) and verify_arguemts_in_commands(program):
         print("\nThe program is correct.\n")
     else:
         print("\nThe program is not correct.\n")
