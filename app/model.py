@@ -1,15 +1,11 @@
 
 "---------------------Declarations---------------------"
 
-from ast import arguments
-from distutils.log import FATAL
-from multiprocessing import parent_process
-from turtle import position
-
-
 declared_variables = []
 
 commands = ["walk", "jump", "jumpTo", "veer", "look", "drop", "grab", "get", "free", "pop"]
+
+procedures = []
 
 directions = ["north", "south", "east", "west", ""]
 
@@ -36,7 +32,64 @@ def clean_arguments(string:str)->list:
     arguments = string.split(",")
 
     return arguments
+
+def declare_variables(program: list):
+
+    """
+
+        Save the correct declared variables.
+
+    """
+
+    for i in program:
+        if "var" in i and len(i) > 1 and i[len(i)-1][len(i[len(i)-1])-1] == ";":
+            i.remove("var")
+            for name in i:
+                name = name.replace(",", "")
+                name = name.replace(";", "")
+                declared_variables.append(name)
+
+def save_procedures(program:list):
+
+    """
         
+        Save the name of declared procedures
+
+    """
+
+    for row in program:
+        if "PROC" in row:
+            row.remove("PROC")
+            string = ""
+            string = string.join(row)
+            first_parenthesis = 0
+            position = 0
+            for char in string:
+                if char == "(":
+                    first_parenthesis = position
+                position += 1
+            procedure_name = string[0: first_parenthesis]
+            procedures.append(procedure_name)
+
+def declare_parameters(program:list):
+
+    """
+
+        Save as variables the arguments in a procedure
+
+    """
+
+    declared_parameters_in = []
+
+    for row in program:
+        for row_element in row:
+            for procedure_name in procedures:
+                if procedure_name in row_element:
+                    string = ""
+                    string = string.join(row)
+                    declared_parameters_in += clean_arguments(string)
+    
+    return declared_parameters_in
 
 "---------------------File reader function---------------------"
 
@@ -142,38 +195,6 @@ def verifiy_var_declarations(program:list)->bool:
 
     return output
 
-def declare_variables(program: list):
-
-    """
-
-        Save the correct declared variables.
-
-    """
-
-    for i in program:
-        if "var" in i and len(i) > 1 and i[len(i)-1][len(i[len(i)-1])-1] == ";":
-            i.remove("var")
-            for name in i:
-                name = name.replace(",", "")
-                name = name.replace(";", "")
-                declared_variables.append(name)
-
-def declare_parameters(program: list):
-
-    """
-
-        Save as variables the arguments in a procedure
-
-    """
-
-    for i in program:
-        if "PROC" in i and len(i) > 1 and i[len(i)-1][len(i[len(i)-1])-1] == ";":
-            i.remove("var")
-            for name in i:
-                name = name.replace(",", "")
-                name = name.replace(";", "")
-                declared_variables.append(name)
-
 def verify_arguemts_in_commands(program:list)->bool:
 
     """
@@ -194,7 +215,7 @@ def verify_arguemts_in_commands(program:list)->bool:
 
     for argument in arguments:
         arguments_validations[argument] = False
-        if argument in declared_variables or argument in directions or argument in commands or argument.isdigit():
+        if argument in declared_variables or argument in directions or argument in commands or argument.isdigit() or argument in declare_parameters(program):
             arguments_validations[argument] = True
 
     output = True
@@ -208,6 +229,12 @@ def verify_arguemts_in_commands(program:list)->bool:
 "---------------------Main function---------------------"
 
 def verify_program(program)->bool:
+
+    declare_variables(program)
+    save_procedures(program)
+
+    print(procedures)
+
     if verify_opened_closed_program(program) and verifiy_var_declarations(program) and verify_opened_closed_procedure(program) and verify_arguemts_in_commands(program):
         print("\nThe program is correct.\n")
     else:

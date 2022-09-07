@@ -10,6 +10,8 @@ arguments = string.split(",")
 
 a = "3094"
 
+string = ""
+
 numbers = {'y': 0, 'x': 5}
 
-print(list(numbers.keys()))
+print(string.join(j))
